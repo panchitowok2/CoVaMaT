@@ -1,4 +1,4 @@
-import { getCases, getCasesSimilarToReuseCase } from '../entities/case.js';
+import { getCases, getCasesSimilarToReuseCase, createCase} from '../entities/case.js';
 const resolvers = {
   Query: {
     getCases: (_, __, { }) => {
@@ -10,6 +10,7 @@ const resolvers = {
     getCasesSimilarToReuseCase: (_, reuseCase, { }) => {
       return getCasesSimilarToReuseCase(reuseCase);
     },
+    hola: ()=> "Te saluda el server :D",
   },
   Mutation: {
     createCase(_, { inputCase }) {

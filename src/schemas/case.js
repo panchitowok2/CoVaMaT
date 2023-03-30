@@ -29,6 +29,7 @@ const typeDefs = gql`
     getCases: [Case]
     getCasesByDomain(domain: InputDomain): [Case]
     getCasesSimilarToReuseCase(reuseCase: ReuseCase): [Case]
+    hola: String
   }
   type Mutation {
     createCase(inputCase: InputCase):ID
