@@ -52,6 +52,17 @@ export const getAllDatasheets = async () => {
   return datasheets;
 }
 
+export const getDomains = async () => {
+  await client.connect();
+  const result = client.db("covamatDB").collection("datasheet").find()
+  let datasheets = [];
+  while (await result.hasNext()) {
+    datasheets.push(await result.next())
+  }
+  client.close();
+  return datasheets;
+}
+
 export const getDatasheetByDomain = async (domain) => {
   await client.connect();
   const result = client.db("covamatDB").collection("datasheet")

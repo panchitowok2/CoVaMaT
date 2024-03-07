@@ -23,6 +23,7 @@ const typeDefs = gql`
     getDatasheetsByDomain(domain: InputDomain): [Datasheet]
     getDatasheetsByVarietyType(varietyType: InputVarietyType): [Datasheet]
     getDatasheetById(idDatasheet: ID): Datasheet
+    getDomains: [Domain]
   }
   type Mutation {
     createDatasheet(datasheet: InputDatasheet):ID

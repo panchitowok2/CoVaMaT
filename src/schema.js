@@ -1,6 +1,5 @@
 import _ from 'lodash';
 import {gql} from 'apollo-server';
-
 import datasheetSchema from './schemas/datasheet.js';
 import variationSchema from './schemas/variation.js';
 import datasheetInstanceSchema from './schemas/datasheetInstance.js';

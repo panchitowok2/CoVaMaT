@@ -10,7 +10,6 @@ const resolvers = {
     getCasesSimilarToReuseCase: (_, reuseCase, { }) => {
       return getCasesSimilarToReuseCase(reuseCase);
     },
-    hola: ()=> "Te saluda el server :D",
   },
   Mutation: {
     createCase(_, { inputCase }) {

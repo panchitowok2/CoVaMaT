@@ -7,7 +7,7 @@ import caseResolver from './resolvers/case.js';
 const resolvers = _.merge(
   datasheetResolver,
   datasheetInstanceResolver,
-  caseResolver
+  caseResolver,
 )
 
 export default resolvers;

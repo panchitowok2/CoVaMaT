@@ -1,4 +1,4 @@
-import { getAllDatasheets, getDatasheetByDomain, getDatasheetsByVarietyType, getDatasheetById, createDatasheet, addVariations } from '../entities/datasheet.js';
+import { getAllDatasheets, getDatasheetByDomain, getDatasheetsByVarietyType, getDatasheetById, createDatasheet, addVariations, getDomains } from '../entities/datasheet.js';
 const resolvers = {
   Query: {
     getAllDatasheets: (_, __, { }) => {
@@ -12,7 +12,10 @@ const resolvers = {
     },
     getDatasheetById: (_, idDatasheet, { })=>{
       return getDatasheetById(idDatasheet);
-    }
+    },
+    getDomains: (_, __, { }) => {
+      return getDomains();
+    },
   },
   Mutation: {
     createDatasheet(_, { datasheet, variations }) {
