@@ -1,4 +1,8 @@
-import { getAllDatasheets, getDatasheetByDomain, getDatasheetsByVarietyType, getDatasheetById, createDatasheet, addVariations, getDomains } from '../entities/datasheet.js';
+import { getAllDatasheets, getDatasheetByDomain, 
+  getDatasheetsByVarietyType, getDatasheetById, 
+  createDatasheet, addVariations, 
+  getDomains, getAllVarietyTypes,
+getVariationPointsByVarietyTypes } from '../entities/datasheet.js';
 const resolvers = {
   Query: {
     getAllDatasheets: (_, __, { }) => {
@@ -16,6 +20,12 @@ const resolvers = {
     getDomains: (_, __, { }) => {
       return getDomains();
     },
+    getAllVarietyTypes: (_, __, { }) => {
+      return getAllVarietyTypes()
+    },
+    getVariationPointsByVarietyTypes: (_, varietyType, { }) => {
+      return getVariationPointsByVarietyTypes(varietyType)
+    }
   },
   Mutation: {
     createDatasheet(_, { datasheet, variations }) {

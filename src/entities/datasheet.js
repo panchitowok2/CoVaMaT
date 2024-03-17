@@ -52,6 +52,7 @@ export const getAllDatasheets = async () => {
   return datasheets;
 }
 
+// Este metodo retorna todos los dominios distintos que esten cargados en la base de datos
 export const getDomains = async () => {
   await client.connect();
   const result = client.db("covamatDB").collection("datasheet").find()
@@ -60,12 +61,41 @@ export const getDomains = async () => {
     const document = await result.next()
     if (!domains.some(objeto => objeto.name === document.domain.name)) {
       domains.push(document.domain)
-      console.log('entro if', document.domain.name)
     }
   }
-  console.log("resultado, ",domains)
   client.close();
   return domains;
+}
+
+// Retorna todos los tipos de variedad que esten cargados en la base de datos
+export const getAllVarietyTypes = async () => {
+  await client.connect();
+  const result = client.db("covamatDB").collection("datasheet").find()
+  let varietyTypes = [];
+  while (await result.hasNext()) {
+    const document = await result.next()
+    if (!varietyTypes.some(objeto => objeto.name === document.varietyType.name)) {
+      varietyTypes.push(document.varietyType)
+    }
+  }
+  client.close();
+  return varietyTypes;
+}
+
+// retorna los puntos de variacion asociados a ese tipo de variedad
+export const getVariationPointsByVarietyTypes = async (varietyType) => {
+  await client.connect();
+  const result = client.db("covamatDB").collection("datasheet")
+    .find({ varietyType: { name: varietyType.varietyType.name } })
+  let variationPoints = [];
+  while (await result.hasNext()) {
+    const document = await result.next()
+    if (!variationPoints.some(objeto => objeto.name === document.variationPoint.name)) {
+      variationPoints.push(document.variationPoint)
+    }
+  }
+  client.close()
+  return variationPoints;
 }
 
 export const getDatasheetByDomain = async (domain) => {
