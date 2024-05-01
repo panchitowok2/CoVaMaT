@@ -26,6 +26,7 @@ const typeDefs = gql`
     getDomains: [Domain]
     getAllVarietyTypes: [VarietyType]
     getVariationPointsByVarietyTypes(varietyType: InputVarietyType): [VariationPoint]
+    getDatasheetByDomainVTVP(domain: InputDomain, varietyType: InputVarietyType, variationPoint: InputVariationPoint): [Datasheet]
   }
   type Mutation {
     createDatasheet(datasheet: InputDatasheet):ID
