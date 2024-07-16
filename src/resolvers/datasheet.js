@@ -3,7 +3,8 @@ import { getAllDatasheets, getDatasheetByDomain,
   createDatasheet, addVariations, 
   getDomains, getAllVarietyTypes,
 getVariationPointsByVarietyTypes,
-getDatasheetByDomainVTVP } from '../entities/datasheet.js';
+getDatasheetByDomainVTVP, 
+getVarietyTypesByDomain } from '../entities/datasheet.js';
 const resolvers = {
   Query: {
     getAllDatasheets: (_, __, { }) => {
@@ -11,6 +12,9 @@ const resolvers = {
     },
     getDatasheetsByDomain: (_, domain, { }) => {
       return getDatasheetByDomain(domain);
+    },
+    getVarietyTypesByDomain: (_, domain, { }) => {
+      return getVarietyTypesByDomain(domain);
     },
     getDatasheetsByVarietyType: (_, varietyType, { }) => {
       return getDatasheetsByVarietyType(varietyType);

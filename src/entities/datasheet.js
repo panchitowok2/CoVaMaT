@@ -67,6 +67,21 @@ export const getDomains = async () => {
   return domains;
 }
 
+export const getVarietyTypesByDomain = async (domain) => {
+  await client.connect();
+  const result = client.db("covamatDB").collection("datasheet").find(
+    { domain: { name: domain.domain.name } })
+  let varietyTypes = [];
+  while (await result.hasNext()) {
+    const document = await result.next()
+    if (!varietyTypes.some(objeto => objeto.name === document.varietyType.name)) {
+      varietyTypes.push(document.varietyType)
+    }
+  }
+  client.close();
+  return varietyTypes;
+}
+
 // Retorna todos los tipos de variedad que esten cargados en la base de datos
 export const getAllVarietyTypes = async () => {
   await client.connect();
@@ -102,9 +117,11 @@ export const getVariationPointsByVarietyTypes = async (varietyType) => {
 export const getDatasheetByDomainVTVP = async (domain, varietyType, variationPoint) => {
   await client.connect();
   const result = client.db("covamatDB").collection("datasheet")
-    .find({ domain: { name: domain.name },
-            varietyType: { name: varietyType.name },
-            variationPoint: {name: variationPoint.name}})
+    .find({
+      domain: { name: domain.name },
+      varietyType: { name: varietyType.name },
+      variationPoint: { name: variationPoint.name }
+    })
   let datasheets = [];
   while (await result.hasNext()) {
     datasheets.push(await result.next())
@@ -158,19 +175,28 @@ export const addVariations = async (idDatasheet, variations) => {
   await client.connect();
   //get datasheet
   const datasheet = await client.db("covamatDB").collection("datasheet")
-    .findOne({ "_id": ObjectId(idDatasheet) });
+    .findOne({ "_id": new ObjectId(idDatasheet) });
   //add variations
   let dsVariations = datasheet.variations || [];
   variations.forEach((variation) => {
     dsVariations.push(variation);
   })
   //update datasheet
-  await client.db("covamatDB").collection("datasheet").updateOne({ "_id": ObjectId(idDatasheet) }, { $set: { "variations": dsVariations } });
-  //retrieve updated datasheet
-  const datasheetUpdated = await client.db("covamatDB").collection("datasheet")
-    .findOne({ "_id": ObjectId(idDatasheet) });
+  //await client.db("covamatDB").collection("datasheet").updateOne({ "_id": new ObjectId(idDatasheet) }, { $set: { "variations": dsVariations } });
+  const result = await client.db("covamatDB").collection("datasheet").updateOne({ "_id": new ObjectId(idDatasheet) }, { $set: { "variations": dsVariations } });
+  
+  //console.log('El resultado es: ', result);
 
-  return map(datasheetUpdated);
+  //retrieve updated datasheet
+  //const datasheetUpdated = await client.db("covamatDB").collection("datasheet").findOne({ "_id": new ObjectId(idDatasheet) });
+
+  if (result.modifiedCount > 0) {
+    //console.log('El datasheet se actualizó correctamente');
+    return true;
+  } else {
+    //console.log('El datasheet no se actualizó');
+    return false;
+  }
 }
 
 

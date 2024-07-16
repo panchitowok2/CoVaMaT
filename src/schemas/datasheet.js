@@ -21,6 +21,7 @@ const typeDefs = gql`
   type Query {
     getAllDatasheets: [Datasheet]
     getDatasheetsByDomain(domain: InputDomain): [Datasheet]
+    getVarietyTypesByDomain(domain: InputDomain): [VarietyType]
     getDatasheetsByVarietyType(varietyType: InputVarietyType): [Datasheet]
     getDatasheetById(idDatasheet: ID): Datasheet
     getDomains: [Domain]
