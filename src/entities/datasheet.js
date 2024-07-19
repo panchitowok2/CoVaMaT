@@ -98,10 +98,29 @@ export const getAllVarietyTypes = async () => {
 }
 
 // retorna los puntos de variacion asociados a ese tipo de variedad
+// en todos los dominios
 export const getVariationPointsByVarietyTypes = async (varietyType) => {
   await client.connect();
   const result = client.db("covamatDB").collection("datasheet")
     .find({ varietyType: { name: varietyType.varietyType.name } })
+  let variationPoints = [];
+  while (await result.hasNext()) {
+    const document = await result.next()
+    if (!variationPoints.some(objeto => objeto.name === document.variationPoint.name)) {
+      variationPoints.push(document.variationPoint)
+    }
+  }
+  client.close()
+  return variationPoints;
+}
+
+// retorna los puntos de variacion asociados a ese tipo de variedad
+export const getVariationPointsByVarietyTypeAndDomain = async (varietyType, domain) => {
+  await client.connect();
+  const result = client.db("covamatDB").collection("datasheet")
+    .find({
+      domain: { name: domain.name },
+      varietyType: { name: varietyType.name } })
   let variationPoints = [];
   while (await result.hasNext()) {
     const document = await result.next()
