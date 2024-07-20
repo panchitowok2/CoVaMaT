@@ -149,6 +149,25 @@ export const getDatasheetByDomainVTVP = async (domain, varietyType, variationPoi
   return datasheets;
 }
 
+// obtengo un datasheet basado en dominio, tipo de variedad y punto de variacion
+export const getVariationsByDomainVTVP = async (domain, varietyType, variationPoint) => {
+  await client.connect();
+  const result = client.db("covamatDB").collection("datasheet")
+    .find({
+      domain: { name: domain.name },
+      varietyType: { name: varietyType.name },
+      variationPoint: { name: variationPoint.name }
+    })
+  let variations = [];
+  if(result){
+    const document = await result.next()
+    variations = document.variations
+    console.log('asi es document: ', document)
+  }
+  client.close()
+  return variations;
+}
+
 
 export const getDatasheetByDomain = async (domain) => {
   await client.connect();
