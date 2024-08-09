@@ -9,6 +9,7 @@ const map = (obj) => {
     _id: obj._id,
     name: obj.name,
     domain: obj.domain,
+    description: obj.description,
     variety: obj.variety
   };
   return studyCase;

@@ -5,12 +5,14 @@ const typeDefs = gql`
     _id: ID
     name: String
     domain: Domain
+    description: String
     variety: [ID]
   }
 
   input ReuseCase {
     name: String
     domain: InputDomain
+    description: String
     context: [ContextVariety]
   }
 
@@ -22,6 +24,7 @@ const typeDefs = gql`
   input InputCase{
     name: String
     domain: InputDomain
+    description: String
     variety: [ID]
   }
 
