@@ -82,3 +82,32 @@ export const createCase = async (inputCase) => {
   client.close();
   return idCase;
 }
+
+export const addVariations = async (idCase, variations) => {
+  await client.connect();
+  //get datasheet
+  const oneCase = await client.db("covamatDB").collection("case")
+    .findOne({ "_id": new ObjectId(idCase) });
+  //add variations
+  let dsVariations = oneCase.variety || [];
+  variations.forEach((variation) => {
+    dsVariations.push(variation);
+  })
+  //update datasheet
+  //await client.db("covamatDB").collection("datasheet").updateOne({ "_id": new ObjectId(idDatasheet) }, { $set: { "variations": dsVariations } });
+  const result = await client.db("covamatDB").collection("case")
+  .updateOne({ "_id": new ObjectId(idCase) }, { $set: { "variety": dsVariations } });
+  
+  //console.log('El resultado es: ', result);
+
+  //retrieve updated datasheet
+  //const datasheetUpdated = await client.db("covamatDB").collection("datasheet").findOne({ "_id": new ObjectId(idDatasheet) });
+
+  if (result.modifiedCount > 0) {
+    //console.log('El datasheet se actualizó correctamente');
+    return true;
+  } else {
+    //console.log('El datasheet no se actualizó');
+    return false;
+  }
+}

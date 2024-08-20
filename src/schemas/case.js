@@ -35,6 +35,7 @@ const typeDefs = gql`
   }
   type Mutation {
     createCase(inputCase: InputCase):ID
+    addVariations(idCase: ID, variations: [ID]): Boolean
   }
 `;
 export default typeDefs;

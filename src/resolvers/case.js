@@ -1,4 +1,4 @@
-import { getCases, getCasesSimilarToReuseCase, createCase} from '../entities/case.js';
+import { getCases, getCasesSimilarToReuseCase, createCase, addVariations} from '../entities/case.js';
 const resolvers = {
   Query: {
     getCases: (_, __, { }) => {
@@ -15,6 +15,9 @@ const resolvers = {
     createCase(_, { inputCase }) {
       console.log("Datos recibidos en el resolver:", inputCase);
       return createCase(inputCase);
+    },
+    addVariations(_, { idCase, variations }) {
+      return addVariations(idCase, variations);
     },
   }
 };
