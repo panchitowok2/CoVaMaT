@@ -13,6 +13,7 @@ const resolvers = {
   },
   Mutation: {
     createCase(_, { inputCase }) {
+      console.log("Datos recibidos en el resolver:", inputCase);
       return createCase(inputCase);
     },
   }

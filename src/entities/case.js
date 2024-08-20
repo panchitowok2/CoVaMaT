@@ -76,6 +76,7 @@ export const getCasesSimilarToReuseCase = async (reuseCase) => {
 
 export const createCase = async (inputCase) => {
   await client.connect();
+  console.log('inputCase: ', inputCase)
   const idCase = await (await client.db("covamatDB")
     .collection("case").insertOne(inputCase)).insertedId;
   client.close();
