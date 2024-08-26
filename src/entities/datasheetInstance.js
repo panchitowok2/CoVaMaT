@@ -58,3 +58,32 @@ export const createDatasheetInstance = async (inputDatasheet) => {
   client.close();
   return idDatasheetInstance;
 }
+
+export const addVariationsToInstance = async (idDatasheet, variations) => {
+  console.log('la entrada es: ', idDatasheet, variations)
+  await client.connect();
+  //get datasheet
+  const datasheet = await client.db("covamatDB").collection("datasheetInstance")
+    .findOne({ "_id": new ObjectId(idDatasheet) });
+  //add variations
+  let dsVariations = datasheet.variations || [];
+  variations.forEach((variation) => {
+    dsVariations.push(variation);
+  })
+  //update datasheet
+  //await client.db("covamatDB").collection("datasheet").updateOne({ "_id": new ObjectId(idDatasheet) }, { $set: { "variations": dsVariations } });
+  const result = await client.db("covamatDB").collection("datasheetInstance").updateOne({ "_id": new ObjectId(idDatasheet) }, { $set: { "variations": dsVariations } });
+  
+  //console.log('El resultado es: ', result);
+
+  //retrieve updated datasheet
+  //const datasheetUpdated = await client.db("covamatDB").collection("datasheet").findOne({ "_id": new ObjectId(idDatasheet) });
+
+  if (result.modifiedCount > 0) {
+    //console.log('El datasheet se actualizó correctamente');
+    return true;
+  } else {
+    //console.log('El datasheet no se actualizó');
+    return false;
+  }
+}
