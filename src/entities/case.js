@@ -96,8 +96,8 @@ export const addVariations = async (idCase, variations) => {
   //update datasheet
   //await client.db("covamatDB").collection("datasheet").updateOne({ "_id": new ObjectId(idDatasheet) }, { $set: { "variations": dsVariations } });
   const result = await client.db("covamatDB").collection("case")
-  .updateOne({ "_id": new ObjectId(idCase) }, { $set: { "variety": dsVariations } });
-  
+    .updateOne({ "_id": new ObjectId(idCase) }, { $set: { "variety": dsVariations } });
+
   //console.log('El resultado es: ', result);
 
   //retrieve updated datasheet
@@ -110,4 +110,61 @@ export const addVariations = async (idCase, variations) => {
     //console.log('El datasheet no se actualizó');
     return false;
   }
+}
+/*
+export const isDatasheetInstanceInCase = async (idCase, datasheetInstance) => {
+  await client.connect();
+  //get datasheet
+  const oneCase = await client.db("covamatDB").collection("case")
+    .findOne({ "_id": new ObjectId(idCase) });
+
+  let result = false;
+  let dsVariations = oneCase.variety;
+  dsVariations.forEach(async (idVar) => {
+    const dat = await client.db("covamatDB").collection("datasheetInstance")
+      .findOne({ "_id": new ObjectId(idVar) });
+    if (dat.domain.name === datasheetInstance.domain.name &&
+      dat.varietyType.name === datasheetInstance.varietyType.name &&
+      dat.variationPoint.name === datasheetInstance.variationPoint.name
+    ) {
+      dat.variations.map((var) => {
+        //if (var.name === datasheetInstance[0].name) {
+        //  result = true
+        //}
+      });
+    }
+  })
+  return result
+}
+*/
+export const getIsDatasheetInstanceInCase = async (idCase, datasheetInstance) => {
+  await client.connect();
+  
+  // Obtener el caso
+  const oneCase = await client.db("covamatDB").collection("case")
+    .findOne({ "_id": new ObjectId(idCase) });
+
+  let result = false;
+  let dsVariations = oneCase.variety;
+  console.log("dsVariations ", dsVariations)
+  // Usar Promise.all para esperar a que todas las promesas se resuelvan
+  await Promise.all(dsVariations.map(async (idVar) => {
+    const dat = await client.db("covamatDB").collection("datasheetInstance")
+      .findOne({ "_id": new ObjectId(idVar) });
+      console.log("dat ", dat)
+      console.log("datasheetInstance ", datasheetInstance)
+    if (dat.domain.name === datasheetInstance.domain.name &&
+      dat.varietyType.name === datasheetInstance.varietyType.name &&
+      dat.variationPoint.name === datasheetInstance.variationPoint.name
+    ) {
+      dat.variations.forEach((variation) => {
+        if (variation.name === datasheetInstance.variations[0].name) {
+          result = true;
+        }
+      });
+    }
+  }));
+
+  await client.close();
+  return result;
 }
