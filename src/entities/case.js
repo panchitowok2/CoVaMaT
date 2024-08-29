@@ -147,23 +147,26 @@ export const getIsDatasheetInstanceInCase = async (idCase, datasheetInstance) =>
   let result = false;
   let dsVariations = oneCase.variety;
   console.log("dsVariations ", dsVariations)
-  // Usar Promise.all para esperar a que todas las promesas se resuelvan
-  await Promise.all(dsVariations.map(async (idVar) => {
+
+  if(oneCase.variety !== null){
+    // Usar Promise.all para esperar a que todas las promesas se resuelvan
+    await Promise.all(dsVariations.map(async (idVar) => {
     const dat = await client.db("covamatDB").collection("datasheetInstance")
       .findOne({ "_id": new ObjectId(idVar) });
-      console.log("dat ", dat)
-      console.log("datasheetInstance ", datasheetInstance)
+      //console.log("dat ", dat)
+      //console.log("datasheetInstance ", datasheetInstance)
     if (dat.domain.name === datasheetInstance.domain.name &&
       dat.varietyType.name === datasheetInstance.varietyType.name &&
       dat.variationPoint.name === datasheetInstance.variationPoint.name
     ) {
-      dat.variations.forEach((variation) => {
+        dat.variations.forEach((variation) => {
         if (variation.name === datasheetInstance.variations[0].name) {
           result = true;
         }
       });
     }
-  }));
+    }));
+  }  
 
   await client.close();
   return result;
