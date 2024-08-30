@@ -11,8 +11,8 @@ const resolvers = {
     getCasesSimilarToReuseCase: (_, reuseCase, { }) => {
       return getCasesSimilarToReuseCase(reuseCase);
     },
-    getIsDatasheetInstanceInCase(_,{idCase, datasheetInstance}){
-      return getIsDatasheetInstanceInCase(idCase, datasheetInstance);
+    getIsDatasheetInstanceInCase(_,{idDatasheetInstanceArray, inputDatasheetInstance}, {}){
+      return getIsDatasheetInstanceInCase(idDatasheetInstanceArray, inputDatasheetInstance);
     }
   },
   Mutation: {
