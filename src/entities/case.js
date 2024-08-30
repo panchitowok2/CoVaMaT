@@ -184,7 +184,7 @@ export const getIsDatasheetInstanceInCase = async (idDatasheetInstanceArray, inp
     // Obtengo todas las datasheet instance
     let result = false;
 
-    if (idDatasheetInstanceArray !== null && inputDatasheetInstance !== null) {
+    if (idDatasheetInstanceArray !== null && idDatasheetInstanceArray.length > 0 && inputDatasheetInstance !== null) {
       // Usar Promise.all para esperar a que todas las promesas se resuelvan
       await Promise.all(idDatasheetInstanceArray.map(async (idDat) => {
 
@@ -207,10 +207,6 @@ export const getIsDatasheetInstanceInCase = async (idDatasheetInstanceArray, inp
         }
 
       }));
-    }else{
-      if(idDatasheetInstanceArray === null && inputDatasheetInstance !== null){
-        result = true
-      }
     }
 
     return result;
