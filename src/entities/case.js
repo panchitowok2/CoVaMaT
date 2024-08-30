@@ -207,6 +207,10 @@ export const getIsDatasheetInstanceInCase = async (idDatasheetInstanceArray, inp
         }
 
       }));
+    }else{
+      if(idDatasheetInstanceArray === null && inputDatasheetInstance !== null){
+        result = true
+      }
     }
 
     return result;
