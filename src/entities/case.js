@@ -83,26 +83,26 @@ export const createCase = async (inputCase) => {
   return idCase;
 }
 
-export const addVariations = async (idCase, variations) => {
+export const addDatasheetInstancesToCase = async (idCase, variations) => {
+  //console.log('Entrada del metodo', idCase, ' ', variations)
   await client.connect();
   //get datasheet
-  const oneCase = await client.db("covamatDB").collection("case")
-    .findOne({ "_id": new ObjectId(idCase) });
+  const oneCase = await client.db("covamatDB").collection("case").findOne({ "_id": new ObjectId(idCase) });
   //add variations
+  
   let dsVariations = oneCase.variety || [];
   variations.forEach((variation) => {
     dsVariations.push(variation);
   })
+  
+  let result = [];
   //update datasheet
-  //await client.db("covamatDB").collection("datasheet").updateOne({ "_id": new ObjectId(idDatasheet) }, { $set: { "variations": dsVariations } });
-  const result = await client.db("covamatDB").collection("case")
-    .updateOne({ "_id": new ObjectId(idCase) }, { $set: { "variety": dsVariations } });
+  if (variations && variations.length > 0) {
+    result = await client.db("covamatDB").collection("case")
+      .updateOne({ "_id": new ObjectId(idCase) }, { $set: { "variety": dsVariations } });
 
-  //console.log('El resultado es: ', result);
-
-  //retrieve updated datasheet
-  //const datasheetUpdated = await client.db("covamatDB").collection("datasheet").findOne({ "_id": new ObjectId(idDatasheet) });
-
+  }
+  client.close();
   if (result.modifiedCount > 0) {
     //console.log('El datasheet se actualizó correctamente');
     return true;
@@ -177,11 +177,16 @@ export const getIsDatasheetInstanceInCase = async (idCase, idDatasheetInstance) 
   return result;
 }
 */
+
+/*
+El metodo getIsDatasheetInstanceInCase valida si la variacion que el usuario desea agregar al caso
+estaba previamente cargada en el mismo.
+*/
 export const getIsDatasheetInstanceInCase = async (idDatasheetInstanceArray, inputDatasheetInstance) => {
   await client.connect();
 
   try {
-    // Obtengo todas las datasheet instance
+    
     let result = false;
 
     if (idDatasheetInstanceArray !== null && idDatasheetInstanceArray.length > 0 && inputDatasheetInstance !== null) {
@@ -212,6 +217,45 @@ export const getIsDatasheetInstanceInCase = async (idDatasheetInstanceArray, inp
     return result;
   } catch (error) {
     console.error("Error al verificar la instancia de datasheet:", error);
+    throw new Error("Error interno del servidor");
+  } finally {
+    await client.close();
+  }
+}
+
+
+/*
+El metodo getIsDatasheetDataInstanceInCase valida si la datasheet instance que el usuario desea agregar al caso
+estaba previamente cargada en el mismo.
+*/
+export const getIsDatasheetInstanceDataInCase = async (idDatasheetInstanceArray, inputDatasheetInstance) => {
+  await client.connect();
+
+  try {
+    
+    let result = false;
+
+    if (idDatasheetInstanceArray !== null && idDatasheetInstanceArray.length > 0 && inputDatasheetInstance !== null) {
+      // Usar Promise.all para esperar a que todas las promesas se resuelvan
+      await Promise.all(idDatasheetInstanceArray.map(async (idDat) => {
+
+        const datInput = await client.db("covamatDB").collection("datasheetInstance")
+          .findOne({ "_id": new ObjectId(idDat) });
+
+        if (datInput &&
+          inputDatasheetInstance.domain.name === datInput.domain.name &&
+          inputDatasheetInstance.varietyType.name === datInput.varietyType.name &&
+          inputDatasheetInstance.variationPoint.name === datInput.variationPoint.name
+        ) {
+          result = true
+        }
+
+      }));
+    }
+
+    return result;
+  } catch (error) {
+    console.error("Error al verificar la datasheet instance: ", error);
     throw new Error("Error interno del servidor");
   } finally {
     await client.close();
