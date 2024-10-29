@@ -233,7 +233,7 @@ export const getIsDatasheetInstanceDataInCase = async (idDatasheetInstanceArray,
 
   try {
     
-    let result = false;
+    let result = null;
 
     if (idDatasheetInstanceArray !== null && idDatasheetInstanceArray.length > 0 && inputDatasheetInstance !== null) {
       // Usar Promise.all para esperar a que todas las promesas se resuelvan
@@ -247,7 +247,7 @@ export const getIsDatasheetInstanceDataInCase = async (idDatasheetInstanceArray,
           inputDatasheetInstance.varietyType.name === datInput.varietyType.name &&
           inputDatasheetInstance.variationPoint.name === datInput.variationPoint.name
         ) {
-          result = true
+          result = idDat._id
         }
 
       }));
