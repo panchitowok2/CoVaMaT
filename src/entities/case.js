@@ -241,13 +241,14 @@ export const getIsDatasheetInstanceDataInCase = async (idDatasheetInstanceArray,
 
         const datInput = await client.db("covamatDB").collection("datasheetInstance")
           .findOne({ "_id": new ObjectId(idDat) });
-
+        //console.log('el valor del datasheet del caso', datInput)
         if (datInput &&
           inputDatasheetInstance.domain.name === datInput.domain.name &&
           inputDatasheetInstance.varietyType.name === datInput.varietyType.name &&
           inputDatasheetInstance.variationPoint.name === datInput.variationPoint.name
         ) {
-          result = idDat._id
+          console.log('dio true', datInput._id)
+          result = datInput._id
         }
 
       }));
