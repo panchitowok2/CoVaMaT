@@ -247,7 +247,6 @@ export const getIsDatasheetInstanceDataInCase = async (idDatasheetInstanceArray,
           inputDatasheetInstance.varietyType.name === datInput.varietyType.name &&
           inputDatasheetInstance.variationPoint.name === datInput.variationPoint.name
         ) {
-          console.log('dio true', datInput._id)
           result = datInput._id
         }
 
