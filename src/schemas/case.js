@@ -34,6 +34,7 @@ const typeDefs = gql`
     getCasesSimilarToReuseCase(reuseCase: ReuseCase): [Case]
     getIsDatasheetInstanceInCase(idDatasheetInstanceArray: [ID], inputDatasheetInstance: InputDatasheetInstance): Boolean
     getIsDatasheetInstanceDataInCase(idDatasheetInstanceArray: [ID], inputDatasheetInstance: InputDatasheetInstance): ID
+    getDatasheetsInstancesByCase(idCase: ID): [DatasheetInstance]
   }
   type Mutation {
     createCase(inputCase: InputCase):ID

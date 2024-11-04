@@ -1,6 +1,6 @@
 import { getCases, getCasesSimilarToReuseCase, createCase, 
   addDatasheetInstancesToCase, getIsDatasheetInstanceInCase, 
-  getIsDatasheetInstanceDataInCase} from '../entities/case.js';
+  getIsDatasheetInstanceDataInCase, getDatasheetsInstancesByCase} from '../entities/case.js';
 const resolvers = {
   Query: {
     getCases: (_, __, { }) => {
@@ -17,6 +17,10 @@ const resolvers = {
     },
     getIsDatasheetInstanceDataInCase(_,{idDatasheetInstanceArray, inputDatasheetInstance}, {}){
       return getIsDatasheetInstanceDataInCase(idDatasheetInstanceArray, inputDatasheetInstance);
+    },
+    getDatasheetsInstancesByCase(_,idCase, {}){
+      console.log(idCase)
+      return getDatasheetsInstancesByCase(idCase);
     }
   },
   Mutation: {

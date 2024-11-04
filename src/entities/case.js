@@ -89,12 +89,12 @@ export const addDatasheetInstancesToCase = async (idCase, variations) => {
   //get datasheet
   const oneCase = await client.db("covamatDB").collection("case").findOne({ "_id": new ObjectId(idCase) });
   //add variations
-  
+
   let dsVariations = oneCase.variety || [];
   variations.forEach((variation) => {
     dsVariations.push(variation);
   })
-  
+
   let result = [];
   //update datasheet
   if (variations && variations.length > 0) {
@@ -186,7 +186,7 @@ export const getIsDatasheetInstanceInCase = async (idDatasheetInstanceArray, inp
   await client.connect();
 
   try {
-    
+
     let result = false;
 
     if (idDatasheetInstanceArray !== null && idDatasheetInstanceArray.length > 0 && inputDatasheetInstance !== null) {
@@ -232,7 +232,7 @@ export const getIsDatasheetInstanceDataInCase = async (idDatasheetInstanceArray,
   await client.connect();
 
   try {
-    
+
     let result = null;
 
     if (idDatasheetInstanceArray !== null && idDatasheetInstanceArray.length > 0 && inputDatasheetInstance !== null) {
@@ -258,6 +258,39 @@ export const getIsDatasheetInstanceDataInCase = async (idDatasheetInstanceArray,
     console.error("Error al verificar la datasheet instance: ", error);
     throw new Error("Error interno del servidor");
   } finally {
+    await client.close();
+  }
+}
+
+export const getDatasheetsInstancesByCase = async (idCase) => {
+  await client.connect();
+
+  try {
+
+
+    let result = []
+
+    console.log('entrada', idCase)
+    const oneCase = await client.db("covamatDB").collection("case").findOne({ "_id": new ObjectId(idCase.idCase) })
+    console.log('el caso', oneCase)
+
+    if (oneCase.variety) {
+      await Promise.all(oneCase.variety.map(async (idDat) => {
+
+        const oneDat = await client.db("covamatDB").collection("datasheetInstance").findOne({ "_id": new ObjectId(idDat) })
+        result.push(oneDat)
+      }))
+    }
+
+
+    return result;
+  } catch (error) {
+    console.error("Error al obtener las datasheet ", error);
+    throw new Error("Error interno del servidor");
+  } finally {
+
+    //console.log('el resultado del metodo es: ', result)
+
     await client.close();
   }
 }
