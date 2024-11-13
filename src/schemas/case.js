@@ -39,6 +39,7 @@ const typeDefs = gql`
   type Mutation {
     createCase(inputCase: InputCase):ID
     addDatasheetInstancesToCase(idCase: ID, variations: [ID]): Boolean
+    addVariationToCase(idCase: ID, datasheetInstance: InputDatasheetInstance): Boolean
   }
 `;
 export default typeDefs;

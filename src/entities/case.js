@@ -294,3 +294,56 @@ export const getDatasheetsInstancesByCase = async (idCase) => {
     await client.close();
   }
 }
+
+export const addVariationToCase = async (idCase, datasheetInstance) => {
+  //console.log('Entrada del metodo', idCase, ' ', variations)
+  await client.connect();
+  let isDatasheetInstanceInCase = false
+  let result
+  if (idCase && datasheetInstance) {
+
+    const oneCase = await client.db("covamatDB").collection("case").findOne({ "_id": new ObjectId(idCase) });
+
+    if(oneCase.variety.length > 0){
+      await Promise.all(oneCase.variety.map(async (idDat) => {
+
+        const oneDatasheetInstance = await client.db("covamatDB").collection("datasheetInstance").findOne({ "_id": new ObjectId(idDat) })
+        if (oneDatasheetInstance.varietyType.name === datasheetInstance.varietyType.name
+          && oneDatasheetInstance.variationPoint.name === datasheetInstance.variationPoint.name
+        ) {
+          let dsVariations = oneDatasheetInstance.variations || [];
+          datasheetInstance.variations.forEach((variation) => {
+            dsVariations.push(variation);
+          })
+          result = await client.db("covamatDB").collection("datasheetInstance").updateOne({ "_id": new ObjectId(idDat) }, { $set: { "variations": dsVariations } });
+        }
+      }))
+    }
+    
+    if (!result) {
+      //console.log('entro al if de !result')
+      // no se actualizo ninguna datasheet, debo crearla
+      const idDatasheet = await (await client.db("covamatDB").collection("datasheetInstance").insertOne(datasheetInstance)).insertedId;
+      
+      // agrego el id de la datasheet al caso
+      let caseVariations = oneCase.variety || [];
+
+      caseVariations.push(idDatasheet.toString());
+
+      const resultCaseUpdated = await client.db("covamatDB").collection("case").updateOne({ "_id": new ObjectId(idCase) }, { $set: { "variety": caseVariations } });
+
+      //console.log('Resultado de actualizar el caso ',resultCaseUpdated)
+      if (resultCaseUpdated.modifiedCount > 0) {
+        isDatasheetInstanceInCase = true;
+      }
+    } else {
+      isDatasheetInstanceInCase = true;
+    }
+  }
+
+
+
+
+  client.close();
+  return isDatasheetInstanceInCase
+}
