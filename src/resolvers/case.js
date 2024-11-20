@@ -20,7 +20,7 @@ const resolvers = {
       return getIsDatasheetInstanceDataInCase(idDatasheetInstanceArray, inputDatasheetInstance);
     },
     getDatasheetsInstancesByCase(_,idCase, {}){
-      console.log(idCase)
+      //console.log(idCase)
       return getDatasheetsInstancesByCase(idCase);
     }
   },

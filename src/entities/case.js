@@ -263,16 +263,42 @@ export const getIsDatasheetInstanceDataInCase = async (idDatasheetInstanceArray,
 }
 
 export const getDatasheetsInstancesByCase = async (idCase) => {
+  try {
+    await client.connect();
+    const result = [];
+
+    const oneCase = await client.db("covamatDB").collection("case").findOne({ "_id": new ObjectId(idCase.idCase) });
+
+    if (oneCase?.variety) {
+      // Cambiamos Promise.all por un bucle `for` para evitar problemas con sesiones paralelas.
+      for (const idDat of oneCase.variety) {
+        const oneDat = await client.db("covamatDB").collection("datasheetInstance").findOne({ "_id": new ObjectId(idDat) });
+        if (oneDat) {
+          result.push(oneDat);
+        }
+      }
+    }
+
+    return result;
+  } catch (error) {
+    //console.error("Error al obtener las datasheets:", error);
+    throw new Error("Error interno del servidor");
+  } finally {
+    await client.close();
+  }
+};
+
+
+/*
+export const getDatasheetsInstancesByCase = async (idCase) => {
   await client.connect();
 
   try {
-
-
     let result = []
 
-    console.log('entrada', idCase)
+    //console.log('entrada', idCase)
     const oneCase = await client.db("covamatDB").collection("case").findOne({ "_id": new ObjectId(idCase.idCase) })
-    console.log('el caso', oneCase)
+    //console.log('el caso', oneCase)
 
     if (oneCase.variety) {
       await Promise.all(oneCase.variety.map(async (idDat) => {
@@ -285,7 +311,7 @@ export const getDatasheetsInstancesByCase = async (idCase) => {
 
     return result;
   } catch (error) {
-    console.error("Error al obtener las datasheet ", error);
+    //console.error("Error al obtener las datasheet ", error);
     throw new Error("Error interno del servidor");
   } finally {
 
@@ -294,56 +320,170 @@ export const getDatasheetsInstancesByCase = async (idCase) => {
     await client.close();
   }
 }
+*/
+export const addVariationToCase = async (idCase, datasheetInstance) => {
+  try {
+    await client.connect();
+  
+    let isDatasheetInstanceInCase = false;
+    let isVariationInCase = false;
+    let result;
 
+    if (idCase && datasheetInstance) {
+      const oneCase = await client.db("covamatDB").collection("case").findOne({ "_id": new ObjectId(idCase) });
+
+      if (oneCase && oneCase.variety) {
+        for (const idDat of oneCase.variety) {
+          const oneDatasheetInstance = await client.db("covamatDB").collection("datasheetInstance").findOne({ "_id": new ObjectId(idDat) });
+
+          if (oneDatasheetInstance.varietyType.name === datasheetInstance.varietyType.name &&
+              oneDatasheetInstance.variationPoint.name === datasheetInstance.variationPoint.name) {
+            for (const variation of oneDatasheetInstance.variations || []) {
+              if (datasheetInstance.variations[0].name === variation.name) {
+                isVariationInCase = true;
+
+                if (datasheetInstance.varietyType.name === 'procesamiento') {
+                  variation.variables.push(...datasheetInstance.variations[0].variables);
+
+                  result = await client.db("covamatDB").collection("datasheetInstance").updateOne(
+                    { "_id": new ObjectId(idDat) },
+                    { $set: { "variations.$[elem].variables": variation.variables } },
+                    { arrayFilters: [{ "elem.name": variation.name }] }
+                  );
+                } else {
+                  throw new Error("La variación ya se encuentra en el caso.");
+                }
+              }
+            }
+
+            if (!isVariationInCase) {
+              const dsVariations = oneDatasheetInstance.variations || [];
+              dsVariations.push(...datasheetInstance.variations);
+
+              result = await client.db("covamatDB").collection("datasheetInstance").updateOne(
+                { "_id": new ObjectId(idDat) },
+                { $set: { "variations": dsVariations } }
+              );
+            }
+          }
+        }
+      }
+
+      if (!result && !isVariationInCase) {
+        const idDatasheet = (await client.db("covamatDB").collection("datasheetInstance").insertOne(datasheetInstance)).insertedId;
+        oneCase.variety = [...(oneCase.variety || []), idDatasheet.toString()];
+
+        const resultCaseUpdated = await client.db("covamatDB").collection("case").updateOne(
+          { "_id": new ObjectId(idCase) },
+          { $set: { "variety": oneCase.variety } }
+        );
+
+        if (resultCaseUpdated.modifiedCount > 0) {
+          isDatasheetInstanceInCase = true;
+        }
+      } else {
+        isDatasheetInstanceInCase = true;
+      }
+    }
+
+    //await client.close();
+    return isDatasheetInstanceInCase;
+  } catch (error) {
+    //console.error("Error al agregar la datasheet instance:", error);
+    throw new Error("Error al agregar la datasheet instance");
+  }finally {
+    await client.close();
+  }
+};
+
+
+
+/*
 export const addVariationToCase = async (idCase, datasheetInstance) => {
   //console.log('Entrada del metodo', idCase, ' ', variations)
   await client.connect();
-  let isDatasheetInstanceInCase = false
-  let result
-  if (idCase && datasheetInstance) {
 
-    const oneCase = await client.db("covamatDB").collection("case").findOne({ "_id": new ObjectId(idCase) });
+  try {
+    let isDatasheetInstanceInCase = false
+    let result
+    let isVariationInCase = false
+    if (idCase && datasheetInstance) {
 
-    if(oneCase.variety.length > 0){
-      await Promise.all(oneCase.variety.map(async (idDat) => {
+      const oneCase = await client.db("covamatDB").collection("case").findOne({ "_id": new ObjectId(idCase) });
 
-        const oneDatasheetInstance = await client.db("covamatDB").collection("datasheetInstance").findOne({ "_id": new ObjectId(idDat) })
-        if (oneDatasheetInstance.varietyType.name === datasheetInstance.varietyType.name
-          && oneDatasheetInstance.variationPoint.name === datasheetInstance.variationPoint.name
-        ) {
-          let dsVariations = oneDatasheetInstance.variations || [];
-          datasheetInstance.variations.forEach((variation) => {
-            dsVariations.push(variation);
-          })
-          result = await client.db("covamatDB").collection("datasheetInstance").updateOne({ "_id": new ObjectId(idDat) }, { $set: { "variations": dsVariations } });
+      if (oneCase && oneCase.variety) {
+        await Promise.all(oneCase.variety.map(async (idDat) => {
+
+          const oneDatasheetInstance = await client.db("covamatDB").collection("datasheetInstance").findOne({ "_id": new ObjectId(idDat) })
+          // Si la datasheet que esta en el caso tiene el mismo tipo de variacion
+          // y el mismo punto de variacion, agrego la variacion de la datasheet nueva al 
+          // caso. Si la datasheet es de procesamiento, y la variacion esta en el arreglo
+          // de la datasheet instance del caso, agrego la variable a esa variacion.
+          if (oneDatasheetInstance.varietyType.name === datasheetInstance.varietyType.name
+            && oneDatasheetInstance.variationPoint.name === datasheetInstance.variationPoint.name
+          ) {
+            // verifico si la variacion ya esta cargada en el caso
+            oneDatasheetInstance.variations?.forEach(async (variation) => {
+              if (datasheetInstance.variations[0].name === variation.name) {
+                //si la datasheet es de procesamiento agrego las variables al esa variedad
+                //si no es de procesamiento no permito agregar la variacion.
+                isVariationInCase = true
+                if (datasheetInstance.varietyType.name === 'procesamiento') {
+                  const dsVariables = variation.variables
+                  datasheetInstance.variations[0].variables.forEach((vari) => {
+                    dsVariables.push(vari);
+                  })
+                  result = await client.db("covamatDB").collection("datasheetInstance").updateOne(
+                    { "_id": new ObjectId(idDat) },
+                    { $set: { "variations.$[elem].variables": dsVariables } },
+                    { arrayFilters: [{ "elem.name": variation.name }] });
+                } else {
+                  throw new Error("La variacion ya se encuentra en el caso");
+                }
+
+              }
+            })
+            if (!isVariationInCase) {
+              let dsVariations = oneDatasheetInstance.variations || [];
+              datasheetInstance.variations.forEach((variation) => {
+                dsVariations.push(variation);
+              })
+              result = await client.db("covamatDB").collection("datasheetInstance").updateOne({ "_id": new ObjectId(idDat) }, { $set: { "variations": dsVariations } });
+
+            }
+          }
+        }))
+      }
+
+      if (!result && !isVariationInCase) {
+        //console.log('entro al if de !result')
+        // no se actualizo ninguna datasheet, debo crearla
+        const idDatasheet = await (await client.db("covamatDB").collection("datasheetInstance").insertOne(datasheetInstance)).insertedId;
+
+        // agrego el id de la datasheet al caso
+        let caseVariations = oneCase.variety || [];
+
+        caseVariations.push(idDatasheet.toString());
+
+        const resultCaseUpdated = await client.db("covamatDB").collection("case").updateOne({ "_id": new ObjectId(idCase) }, { $set: { "variety": caseVariations } });
+
+        //console.log('Resultado de actualizar el caso ',resultCaseUpdated)
+        if (resultCaseUpdated.modifiedCount > 0) {
+          isDatasheetInstanceInCase = true;
         }
-      }))
-    }
-    
-    if (!result) {
-      //console.log('entro al if de !result')
-      // no se actualizo ninguna datasheet, debo crearla
-      const idDatasheet = await (await client.db("covamatDB").collection("datasheetInstance").insertOne(datasheetInstance)).insertedId;
-      
-      // agrego el id de la datasheet al caso
-      let caseVariations = oneCase.variety || [];
-
-      caseVariations.push(idDatasheet.toString());
-
-      const resultCaseUpdated = await client.db("covamatDB").collection("case").updateOne({ "_id": new ObjectId(idCase) }, { $set: { "variety": caseVariations } });
-
-      //console.log('Resultado de actualizar el caso ',resultCaseUpdated)
-      if (resultCaseUpdated.modifiedCount > 0) {
+      } else {
         isDatasheetInstanceInCase = true;
       }
-    } else {
-      isDatasheetInstanceInCase = true;
     }
+
+    return isDatasheetInstanceInCase
+  } catch (error) {
+    console.error("Error al agregar la datasheet instance", error);
+    throw new Error("Error al agregar la datasheet instance", error.message);
+  } finally {
+
+    await client.close();
   }
 
-
-
-
-  client.close();
-  return isDatasheetInstanceInCase
 }
+  */
