@@ -1,7 +1,7 @@
 import { getCases, getCasesSimilarToReuseCase, createCase, 
   addDatasheetInstancesToCase, getIsDatasheetInstanceInCase, 
   getIsDatasheetInstanceDataInCase, getDatasheetsInstancesByCase,
-  addVariationToCase} from '../entities/case.js';
+  addVariationToCase, createReuseCase} from '../entities/case.js';
 const resolvers = {
   Query: {
     getCases: (_, __, { }) => {
@@ -36,6 +36,10 @@ const resolvers = {
     addVariationToCase(_, { idCase, datasheetInstance } ) {
       //console.log("Datos recibidos en el resolver case:", idCase, variations);
       return addVariationToCase(idCase, datasheetInstance);
+    },
+    createReuseCase(_, { inputCase, inputDatasheetInstance } ) {
+      //console.log("Datos recibidos en el resolver case:", idCase, variations);
+      return createReuseCase(inputCase, inputDatasheetInstance);
     },
   }
 };

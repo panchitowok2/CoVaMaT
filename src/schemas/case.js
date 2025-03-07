@@ -40,6 +40,7 @@ const typeDefs = gql`
     createCase(inputCase: InputCase):ID
     addDatasheetInstancesToCase(idCase: ID, variations: [ID]): Boolean
     addVariationToCase(idCase: ID, datasheetInstance: InputDatasheetInstance): Boolean
+    createReuseCase(inputCase: InputCase, inputDatasheetInstance: [InputDatasheetInstance]): ID
   }
 `;
 export default typeDefs;

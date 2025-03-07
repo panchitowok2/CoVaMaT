@@ -55,11 +55,13 @@ export const getCasesSimilarToReuseCase = async (reuseCase) => {
           variationPoint: caseContextVariety[i]['variationPoint'],
           variations: caseContextVariety[i]['variations']
         };
+        //console.log("Punto de variacion + variaciones del caso " + actualCase['_id'] + " "  + JSON.stringify(variationPointAndVariations))
         //findIndex checks if the extracted object appears in the context array of reuseObject
         //returns the index if exists, -1 otherwise
         if (_.findIndex(reuseCaseContext, variationPointAndVariations) == -1) {
           //this context variety of the case is not present in the context array of reuse object.
           matches = false;
+          //console.log("No encontro la variedad en este caso. " + JSON.stringify(reuseCaseContext) )
         }
         i++;
       }
@@ -77,8 +79,7 @@ export const getCasesSimilarToReuseCase = async (reuseCase) => {
 export const createCase = async (inputCase) => {
   await client.connect();
   //console.log('inputCase: ', inputCase)
-  const idCase = await (await client.db("covamatDB")
-    .collection("case").insertOne(inputCase)).insertedId;
+  const idCase = await (await client.db("covamatDB").collection("case").insertOne(inputCase)).insertedId;
   client.close();
   return idCase;
 }
@@ -324,7 +325,7 @@ export const getDatasheetsInstancesByCase = async (idCase) => {
 export const addVariationToCase = async (idCase, datasheetInstance) => {
   try {
     await client.connect();
-  
+
     let isDatasheetInstanceInCase = false;
     let isVariationInCase = false;
     let result;
@@ -337,9 +338,9 @@ export const addVariationToCase = async (idCase, datasheetInstance) => {
           const oneDatasheetInstance = await client.db("covamatDB").collection("datasheetInstance").findOne({ "_id": new ObjectId(idDat) });
 
           if (oneDatasheetInstance.varietyType.name === datasheetInstance.varietyType.name &&
-              oneDatasheetInstance.variationPoint.name === datasheetInstance.variationPoint.name) {
+            oneDatasheetInstance.variationPoint.name === datasheetInstance.variationPoint.name) {
             for (const variation of oneDatasheetInstance.variations || []) {
-              if (datasheetInstance.variations[0].name === variation.name) {
+              if (variation.name && datasheetInstance.variations[0].name === variation.name) {
                 isVariationInCase = true;
 
                 if (datasheetInstance.varietyType.name === 'procesamiento') {
@@ -351,7 +352,7 @@ export const addVariationToCase = async (idCase, datasheetInstance) => {
                     { arrayFilters: [{ "elem.name": variation.name }] }
                   );
                 } else {
-                  throw new Error("La variación ya se encuentra en el caso.");
+                  //throw new Error("La variación ya se encuentra en el caso.");
                 }
               }
             }
@@ -391,7 +392,7 @@ export const addVariationToCase = async (idCase, datasheetInstance) => {
   } catch (error) {
     //console.error("Error al agregar la datasheet instance:", error);
     throw new Error("Error al agregar la datasheet instance");
-  }finally {
+  } finally {
     await client.close();
   }
 };
@@ -487,3 +488,48 @@ export const addVariationToCase = async (idCase, datasheetInstance) => {
 
 }
   */
+
+export const createReuseCase = async (inputCase, inputDatasheetInstance) => {
+  try {
+    await client.connect();
+    let idCase, result;
+
+    // Valido que el caso venga con datos
+    if (inputCase && inputCase.name !== '' && inputCase.description !== '' && inputCase.domain.name !== '') {
+      // Inserto el caso y obtengo su ID
+      idCase = (await client.db("covamatDB").collection("case").insertOne(inputCase)).insertedId;
+
+      let arrIdsDatasheetInstances = [];
+
+      // Si hay datasheet instances, las inserto una por una
+      if (inputDatasheetInstance.length > 0) {
+        for (const datasheet of inputDatasheetInstance) {
+          const idDat = (await client.db("covamatDB").collection("datasheetInstance").insertOne(datasheet)).insertedId;
+          arrIdsDatasheetInstances.push(idDat);
+          console.log('Agrego un id al arreglo de datasheet instances ', idDat);
+        }
+      }
+
+      // Si se insertaron datasheet instances, actualizo el caso con sus IDs
+      if (arrIdsDatasheetInstances.length > 0) {
+        result = await client.db("covamatDB").collection("case").updateOne(
+          { "_id": new ObjectId(idCase) },
+          { $set: { "variety": arrIdsDatasheetInstances } }
+        );
+      }
+    }
+
+    // Retorno el ID del caso si todo fue exitoso
+    if (result) {
+      return idCase;
+    } else {
+      return null;
+    }
+
+  } catch (error) {
+    console.error("Error al agregar la datasheet instance:", error);
+    throw new Error("Error al agregar la datasheet instance");
+  } finally {
+    await client.close();
+  }
+};
