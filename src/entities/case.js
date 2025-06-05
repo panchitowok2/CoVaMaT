@@ -40,6 +40,7 @@ export const getCasesSimilarToReuseCase = async (reuseCase) => {
     //get the array of ids of ds instances
     let datasheetInstancesIds = actualCase['variety'];
     //get the context ds instances of the case
+    //console.log('id caso ', actualCase['_id'], ' muestro las datasheets instances ids ', datasheetInstancesIds)
     const caseContextVariety = await getDatasheetInstancesByIdAndContextType(datasheetInstancesIds);
     if (caseContextVariety.length > 0) {
       // we have to check if every context variety of the case appeears in the
@@ -506,7 +507,7 @@ export const createReuseCase = async (inputCase, inputDatasheetInstance) => {
         for (const datasheet of inputDatasheetInstance) {
           const idDat = (await client.db("covamatDB").collection("datasheetInstance").insertOne(datasheet)).insertedId;
           arrIdsDatasheetInstances.push(idDat);
-          console.log('Agrego un id al arreglo de datasheet instances ', idDat);
+          //console.log('Agrego un id al arreglo de datasheet instances ', idDat);
         }
       }
 
