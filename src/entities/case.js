@@ -26,7 +26,7 @@ export const getCases = async () => {
   return cases;
 
 }
-
+/*
 export const getCasesSimilarToReuseCase = async (reuseCase) => {
   const reuseCaseContext = reuseCase['reuseCase']['context'];
   await client.connect();
@@ -75,7 +75,60 @@ export const getCasesSimilarToReuseCase = async (reuseCase) => {
   client.close();
   return similarCases;
 }
+*/
 
+export const getCasesSimilarToReuseCase = async (reuseCase) => {
+  const reuseCaseContext = reuseCase['reuseCase']['context'];
+  await client.connect();
+  const result = client.db("covamatDB").collection("case").find({ 
+    domain: { name: reuseCase['reuseCase']['domain']['name'] } 
+  });
+  
+  const similarCases = [];
+  
+  while (await result.hasNext()) {
+    const actualCase = await result.next();
+    const datasheetInstancesIds = actualCase['variety'];
+    const caseContextVariety = await getDatasheetInstancesByIdAndContextType(datasheetInstancesIds);
+    
+    if (caseContextVariety.length > 0) {
+      let allVariationsExist = true;
+      
+      // Verificar cada variationPoint en reuseCaseContext
+      for (const reuseItem of reuseCaseContext) {
+        // Buscar el variationPoint correspondiente en el caso actual
+        const caseVariationPoint = caseContextVariety.find(
+          item => item.variationPoint.name === reuseItem.variationPoint.name
+        );
+        
+        if (!caseVariationPoint) {
+          // Si no existe el variationPoint, no es un caso similar
+          allVariationsExist = false;
+          break;
+        }
+        
+        // Verificar que todas las variaciones de reuseItem estén en caseVariationPoint
+        const allVariationsMatch = reuseItem.variations.every(reuseVariation => 
+          caseVariationPoint.variations.some(
+            caseVariation => caseVariation.name === reuseVariation.name
+          )
+        );
+        
+        if (!allVariationsMatch) {
+          allVariationsExist = false;
+          break;
+        }
+      }
+      
+      if (allVariationsExist) {
+        similarCases.push(actualCase);
+      }
+    }
+  }
+  
+  client.close();
+  return similarCases;
+};
 
 export const createCase = async (inputCase) => {
   await client.connect();
